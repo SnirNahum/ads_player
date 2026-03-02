@@ -42,22 +42,17 @@ export function createImaClient(
     if (!adsManager) return;
 
     adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onError);
-    adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, () =>
-      cb.onAdBreakStart?.(),
-    );
-    adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, () =>
-      cb.onAdBreakEnd?.(),
+    adsManager.addEventListener(
+      google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED,
+      () => cb.onAdBreakStart?.(),
     );
     adsManager.addEventListener(
-      google.ima.AdEvent.Type.ALL_ADS_COMPLETED,
-      destroyManager,
+      google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED,
+      () => cb.onAdBreakEnd?.(),
     );
+    adsManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, destroyManager);
 
-    adsManager.init(
-      videoEl.clientWidth,
-      videoEl.clientHeight,
-      google.ima.ViewMode.NORMAL,
-    );
+    adsManager.init(videoEl.clientWidth, videoEl.clientHeight, google.ima.ViewMode.NORMAL);
     adsManager.start();
   };
 
@@ -81,11 +76,7 @@ export function createImaClient(
 
     resize() {
       if (!adsManager) return;
-      adsManager.resize(
-        videoEl.clientWidth,
-        videoEl.clientHeight,
-        google.ima.ViewMode.NORMAL,
-      );
+      adsManager.resize(videoEl.clientWidth, videoEl.clientHeight, google.ima.ViewMode.NORMAL);
     },
 
     destroy() {

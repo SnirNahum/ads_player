@@ -1,27 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ABORT_ERROR } from "./constants";
 import { createImaClient } from "./createImaClient";
 import { loadImaSdk } from "./loadImaSdk";
-import { ABORT_ERROR } from "./constants";
 import { withCorrelator } from "./utils";
 
 export type UseImaAdsArgs = {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   adContainerRef: React.RefObject<HTMLDivElement | null>;
-  prerollAdTagUrl: string;
-  midrollAdTagUrl: string;
+  adTagUrl: string;
 };
 
-export function useImaAds({
-  videoRef,
-  adContainerRef,
-  prerollAdTagUrl,
-  midrollAdTagUrl,
-}: UseImaAdsArgs) {
+export function useImaAds({ videoRef, adContainerRef, adTagUrl }: UseImaAdsArgs) {
   const imaRef = useRef<ReturnType<typeof createImaClient> | null>(null);
   const initializedRef = useRef(false);
-
-  const prerollRequestedRef = useRef(false);
-  const midrollRequestedRef = useRef(false);
+  const adRequestedRef = useRef(false);
 
   const adBreakActiveRef = useRef(false);
   const [adBreakActive, setAdBreakActive] = useState(false);
@@ -53,7 +45,6 @@ export function useImaAds({
         },
         onAdError: () => {
           setAdBreak(false);
-          midrollRequestedRef.current = false;
           video.play().catch((err: unknown) => {
             if (err instanceof DOMException && err.name === ABORT_ERROR) return;
             if (import.meta.env.DEV) console.error(err);
@@ -84,20 +75,6 @@ export function useImaAds({
     };
   }, []);
 
-  const requestAds = useCallback(
-    async (adTagUrl: string, pauseBeforeRequest: boolean) => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      const ima = await ensureIma();
-      if (!ima) return;
-
-      if (pauseBeforeRequest) video.pause();
-      ima.requestAds(withCorrelator(adTagUrl));
-    },
-    [ensureIma, videoRef],
-  );
-
   const onPlay = useCallback(async () => {
     const video = videoRef.current;
     if (!video) return;
@@ -107,30 +84,21 @@ export function useImaAds({
       return;
     }
 
-    if (prerollRequestedRef.current) return;
-    prerollRequestedRef.current = true;
+    if (adRequestedRef.current) return;
+    adRequestedRef.current = true;
 
     try {
-      await requestAds(prerollAdTagUrl, true);
+      const ima = await ensureIma();
+      if (!ima) return;
+      video.pause();
+      ima.requestAds(withCorrelator(adTagUrl));
     } catch {
       video.play().catch((err: unknown) => {
         if (err instanceof DOMException && err.name === ABORT_ERROR) return;
         if (import.meta.env.DEV) console.error(err);
       });
     }
-  }, [prerollAdTagUrl, requestAds, videoRef]);
+  }, [adTagUrl, ensureIma, videoRef]);
 
-  const onTimeUpdate = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (adBreakActiveRef.current) return;
-    if (video.seeking) return;
-    if (midrollRequestedRef.current) return;
-
-    midrollRequestedRef.current = true;
-    void requestAds(midrollAdTagUrl, true);
-  }, [midrollAdTagUrl, requestAds, videoRef]);
-
-  return { adBreakActive, onPlay, onTimeUpdate };
+  return { adBreakActive, onPlay };
 }

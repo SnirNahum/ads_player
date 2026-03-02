@@ -12,18 +12,18 @@ declare global {
       }
 
       namespace AdErrorEvent {
-        const Type: { AD_ERROR: "AD_ERROR" };
+        const Type: { AD_ERROR: string };
       }
 
       namespace AdsManagerLoadedEvent {
-        const Type: { ADS_MANAGER_LOADED: "ADS_MANAGER_LOADED" };
+        const Type: { ADS_MANAGER_LOADED: string };
       }
 
       namespace AdEvent {
         const Type: {
-          CONTENT_PAUSE_REQUESTED: "CONTENT_PAUSE_REQUESTED";
-          CONTENT_RESUME_REQUESTED: "CONTENT_RESUME_REQUESTED";
-          ALL_ADS_COMPLETED: "ALL_ADS_COMPLETED";
+          CONTENT_PAUSE_REQUESTED: string;
+          CONTENT_RESUME_REQUESTED: string;
+          ALL_ADS_COMPLETED: string;
         };
       }
 
@@ -51,30 +51,18 @@ declare global {
 
       interface AdsLoader {
         addEventListener(
-          type: "ADS_MANAGER_LOADED",
+          type: typeof AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
           cb: EventHandler<AdsManagerLoadedEvent>,
           capture?: boolean,
         ): void;
-
-        addEventListener(
-          type: string,
-          cb: EventHandler<unknown>,
-          capture?: boolean,
-        ): void;
-
+        addEventListener(type: string, cb: EventHandler<unknown>, capture?: boolean): void;
         requestAds(request: AdsRequest): void;
-
         removeEventListener?(
-          type: "ADS_MANAGER_LOADED",
+          type: typeof AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
           cb: EventHandler<AdsManagerLoadedEvent>,
           capture?: boolean,
         ): void;
-
-        removeEventListener?(
-          type: string,
-          cb: EventHandler<unknown>,
-          capture?: boolean,
-        ): void;
+        removeEventListener?(type: string, cb: EventHandler<unknown>, capture?: boolean): void;
       }
 
       interface AdDisplayContainerConstructor {
