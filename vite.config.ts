@@ -15,4 +15,15 @@ export default defineConfig({
   optimizeDeps: {
     include: ["video.js"],
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          videojs: ["video.js"],
+          "videojs-ads": ["videojs-contrib-ads", "videojs-ima"],
+        },
+      },
+    },
+  },
 });
