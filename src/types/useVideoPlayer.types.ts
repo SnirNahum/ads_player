@@ -8,4 +8,5 @@ export interface UseVideoPlayerOptions {
 export interface UseVideoPlayerReturn {
   videoElRef: React.RefObject<HTMLVideoElement | null>;
   ready: boolean;
+  error: string | null;
 }

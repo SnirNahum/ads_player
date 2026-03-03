@@ -1,18 +1,22 @@
 import { useRef } from "react";
 import { useVideoPlayer } from "@/hooks/useVideoPlayer";
 import { createStableId } from "@/utils/utils";
-import { AD } from "@/CONSTANTS";
+import { AD, VIDEO_NOT_DISPLAY_ERROR } from "@/CONSTANTS";
 import type { VideoPlayerProps } from "@/types/VideoPlayer.types";
 
 export function VideoPlayer({ src, adTagUrl }: VideoPlayerProps) {
   const adContainerIdRef = useRef<string>(createStableId(AD));
   const adContainerId = adContainerIdRef.current;
 
-  const { videoElRef } = useVideoPlayer({
+  const { videoElRef, error } = useVideoPlayer({
     src,
     adTagUrl,
     adContainerId,
   });
+
+  if (error) {
+    return <p>{VIDEO_NOT_DISPLAY_ERROR}</p>;
+  }
 
   return (
     <div className="relative w-full rounded-xl overflow-hidden">

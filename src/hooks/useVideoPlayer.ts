@@ -3,7 +3,8 @@ import videojs from "video.js";
 import "videojs-contrib-ads";
 import "videojs-ima";
 import { loadImaSdk } from "@/lib/loadImaSdk";
-import { ADS_ERROR, AUTO, MP4_TYPE, PLAY } from "@/CONSTANTS";
+import { getVideoMimeType } from "@/utils/utils";
+import { ADS_ERROR, AUTO, PLAY } from "@/CONSTANTS";
 import type { PlayerWithIma, VideoJsPlayer } from "@/types/videojs-ima.types";
 import type {
   UseVideoPlayerOptions,
@@ -19,10 +20,12 @@ export function useVideoPlayer({
   const videoElRef = useRef<HTMLVideoElement | null>(null);
   const playerRef = useRef<VideoJsPlayer | null>(null);
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let canceled = false;
     setReady(false);
+    setError(null);
 
     async function init() {
       const el = videoElRef.current;
@@ -39,7 +42,7 @@ export function useVideoPlayer({
         controls: true,
         preload: AUTO,
         poster,
-        sources: [{ src, type: MP4_TYPE }],
+        sources: [{ src, type: getVideoMimeType(src) }],
         fluid: true,
         playsinline: true,
       });
@@ -50,7 +53,7 @@ export function useVideoPlayer({
       player.ima({
         adTagUrl,
         adContainerId,
-        debug: false,
+        debug: import.meta.env.DEV,
       });
 
       const onFirstPlay = () => {
@@ -68,7 +71,10 @@ export function useVideoPlayer({
       setReady(true);
     }
 
-    init();
+    init().catch((err: unknown) => {
+      if (canceled) return;
+      setError(err instanceof Error ? err.message : "Player failed to load");
+    });
 
     return () => {
       canceled = true;
@@ -78,5 +84,5 @@ export function useVideoPlayer({
     };
   }, [src, poster, adTagUrl, adContainerId]);
 
-  return { videoElRef, ready };
+  return { videoElRef, ready, error };
 }

@@ -23,6 +23,8 @@ export function loadImaSdk(): Promise<void> {
         return;
       }
 
+      let timeoutId: ReturnType<typeof setTimeout>;
+
       const onLoad = () => {
         existing.dataset.loaded = "true";
         cleanup();
@@ -36,9 +38,16 @@ export function loadImaSdk(): Promise<void> {
       };
 
       const cleanup = () => {
+        clearTimeout(timeoutId);
         existing.removeEventListener("load", onLoad);
         existing.removeEventListener("error", onError);
       };
+
+      timeoutId = setTimeout(() => {
+        cleanup();
+        imaSdkPromise = null;
+        reject(new Error("IMA SDK load timed out"));
+      }, 10_000);
 
       existing.addEventListener("load", onLoad);
       existing.addEventListener("error", onError);
@@ -49,6 +58,8 @@ export function loadImaSdk(): Promise<void> {
     script.src = IMA_SDK_URL;
     script.async = true;
     script.dataset.imaSdk = "true";
+
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const onLoad = () => {
       script.dataset.loaded = "true";
@@ -63,9 +74,16 @@ export function loadImaSdk(): Promise<void> {
     };
 
     const cleanup = () => {
+      clearTimeout(timeoutId);
       script.removeEventListener("load", onLoad);
       script.removeEventListener("error", onError);
     };
+
+    timeoutId = setTimeout(() => {
+      cleanup();
+      imaSdkPromise = null;
+      reject(new Error("IMA SDK load timed out"));
+    }, 10_000);
 
     script.addEventListener("load", onLoad);
     script.addEventListener("error", onError);

@@ -1,7 +1,10 @@
+export function getVideoMimeType(src: string): string {
+  if (src.includes(".m3u8")) return "application/x-mpegURL";
+  if (src.includes(".mpd")) return "application/dash+xml";
+  if (src.includes(".webm")) return "video/webm";
+  return "video/mp4";
+}
+
 export function createStableId(prefix: string) {
-  const id =
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : Math.random().toString(16).slice(2);
-  return `${prefix}-${id}`;
+  return `${prefix}-${crypto.randomUUID()}`;
 }
