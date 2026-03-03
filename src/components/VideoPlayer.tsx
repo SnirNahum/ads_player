@@ -4,7 +4,7 @@ import { createStableId } from "@/utils/utils";
 import { AD, VIDEO_NOT_DISPLAY_ERROR } from "@/CONSTANTS";
 import type { VideoPlayerProps } from "@/types/VideoPlayer.types";
 
-export function VideoPlayer({ src, adTagUrl }: VideoPlayerProps) {
+export function VideoPlayer({ src, adTagUrl, poster }: VideoPlayerProps) {
   const adContainerIdRef = useRef<string>(createStableId(AD));
   const adContainerId = adContainerIdRef.current;
 
@@ -12,6 +12,7 @@ export function VideoPlayer({ src, adTagUrl }: VideoPlayerProps) {
     src,
     adTagUrl,
     adContainerId,
+    poster,
   });
 
   if (error) {
