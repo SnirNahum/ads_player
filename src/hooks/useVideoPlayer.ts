@@ -1,23 +1,14 @@
-// src/hooks/useVideoPlayer.ts
-import { useEffect, useRef, useState } from 'react';
-import videojs from 'video.js';
-import 'videojs-contrib-ads';
-import 'videojs-ima';
-import { loadImaSdk } from '@/lib/loadImaSdk';
-
-type VideoJsPlayer = ReturnType<typeof videojs>;
-
-interface UseVideoPlayerOptions {
-  src: string;
-  poster?: string;
-  adTagUrl: string;
-  adContainerId: string;
-}
-
-interface UseVideoPlayerReturn {
-  videoElRef: React.RefObject<HTMLVideoElement | null>;
-  ready: boolean;
-}
+import { useEffect, useRef, useState } from "react";
+import videojs from "video.js";
+import "videojs-contrib-ads";
+import "videojs-ima";
+import { loadImaSdk } from "@/lib/loadImaSdk";
+import { ADS_ERROR, AUTO, MP4_TYPE, PLAY } from "@/CONSTANTS";
+import type { PlayerWithIma, VideoJsPlayer } from "@/types/videojs-ima.types";
+import type {
+  UseVideoPlayerOptions,
+  UseVideoPlayerReturn,
+} from "@/types/useVideoPlayer.types";
 
 export function useVideoPlayer({
   src,
@@ -30,26 +21,32 @@ export function useVideoPlayer({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    let disposed = false;
+    let canceled = false;
+    setReady(false);
 
     async function init() {
-      if (!videoElRef.current) return;
+      const el = videoElRef.current;
+      if (!el) return;
+
+      const prev = playerRef.current;
+      if (prev && !prev.isDisposed()) prev.dispose();
+      playerRef.current = null;
 
       await loadImaSdk();
-      if (disposed) return;
+      if (canceled) return;
 
-      const player = videojs(videoElRef.current, {
+      const playerBase = videojs(el, {
         controls: true,
-        preload: 'auto',
+        preload: AUTO,
         poster,
-        sources: [{ src, type: 'video/mp4' }],
+        sources: [{ src, type: MP4_TYPE }],
         fluid: true,
         playsinline: true,
       });
 
+      const player = playerBase as PlayerWithIma;
       playerRef.current = player;
 
-      // @ts-expect-error plugin method exists at runtime
       player.ima({
         adTagUrl,
         adContainerId,
@@ -57,18 +54,15 @@ export function useVideoPlayer({
       });
 
       const onFirstPlay = () => {
-        // @ts-expect-error plugin method exists at runtime
-        player.ima?.initializeAdDisplayContainer?.();
-        // @ts-expect-error plugin method exists at runtime
-        player.ima?.requestAds?.();
-        player.off('play', onFirstPlay);
+        player.ima.initializeAdDisplayContainer?.();
+        player.ima.requestAds?.();
+        player.off(PLAY, onFirstPlay);
       };
 
-      player.on('play', onFirstPlay);
+      player.on(PLAY, onFirstPlay);
 
-      player.on('adserror', () => {
-        // @ts-expect-error plugin method exists at runtime
-        player.ima?.resumeAdPlayback?.();
+      player.on(ADS_ERROR, () => {
+        player.ima.resumeAdPlayback?.();
       });
 
       setReady(true);
@@ -77,7 +71,7 @@ export function useVideoPlayer({
     init();
 
     return () => {
-      disposed = true;
+      canceled = true;
       const p = playerRef.current;
       playerRef.current = null;
       if (p && !p.isDisposed()) p.dispose();

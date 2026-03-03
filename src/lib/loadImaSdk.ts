@@ -1,36 +1,77 @@
-// src/lib/loadImaSdk.ts
-
 declare global {
   interface Window {
-    google?: unknown;
+    google?: { ima?: unknown };
   }
 }
 
-const IMA_SDK_URL = 'https://imasdk.googleapis.com/js/sdkloader/ima3.js';
+const IMA_SDK_URL = "https://imasdk.googleapis.com/js/sdkloader/ima3.js";
+
+let imaSdkPromise: Promise<void> | null = null;
 
 export function loadImaSdk(): Promise<void> {
-  if (window.google) return Promise.resolve();
+  if (window.google?.ima) return Promise.resolve();
+  if (imaSdkPromise) return imaSdkPromise;
 
-  const existing = document.querySelector<HTMLScriptElement>(
-    'script[data-ima-sdk="true"]',
-  );
-  if (existing) {
-    return new Promise((resolve, reject) => {
-      existing.addEventListener('load', () => resolve());
-      existing.addEventListener('error', () =>
-        reject(new Error('Failed to load IMA SDK')),
-      );
-    });
-  }
+  imaSdkPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[data-ima-sdk="true"]',
+    );
 
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = IMA_SDK_URL;
-    s.async = true;
-    s.defer = true;
-    s.dataset.imaSdk = 'true';
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Failed to load IMA SDK'));
-    document.head.appendChild(s);
+    if (existing) {
+      if (existing.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+
+      const onLoad = () => {
+        existing.dataset.loaded = "true";
+        cleanup();
+        resolve();
+      };
+
+      const onError = () => {
+        cleanup();
+        imaSdkPromise = null;
+        reject(new Error("Failed to load IMA SDK"));
+      };
+
+      const cleanup = () => {
+        existing.removeEventListener("load", onLoad);
+        existing.removeEventListener("error", onError);
+      };
+
+      existing.addEventListener("load", onLoad);
+      existing.addEventListener("error", onError);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = IMA_SDK_URL;
+    script.async = true;
+    script.dataset.imaSdk = "true";
+
+    const onLoad = () => {
+      script.dataset.loaded = "true";
+      cleanup();
+      resolve();
+    };
+
+    const onError = () => {
+      cleanup();
+      imaSdkPromise = null;
+      reject(new Error("Failed to load IMA SDK"));
+    };
+
+    const cleanup = () => {
+      script.removeEventListener("load", onLoad);
+      script.removeEventListener("error", onError);
+    };
+
+    script.addEventListener("load", onLoad);
+    script.addEventListener("error", onError);
+
+    document.head.appendChild(script);
   });
+
+  return imaSdkPromise;
 }
