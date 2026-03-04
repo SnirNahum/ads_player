@@ -78,9 +78,9 @@ export function useVideoPlayer({
 
     return () => {
       canceled = true;
-      const p = playerRef.current;
+      const player = playerRef.current;
       playerRef.current = null;
-      if (p && !p.isDisposed()) p.dispose();
+      if (player && !player.isDisposed()) player.dispose();
     };
   }, [src, poster, adTagUrl, adContainerId]);
 

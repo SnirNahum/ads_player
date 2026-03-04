@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ads Player — Architecture Overview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d1a;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    /* ── COVER ── */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0d0d1a 0%, #1a1040 50%, #0d0d1a 100%);
+      text-align: center;
+      padding: 40px;
+      page-break-after: always;
+    }
+    .cover-badge {
+      display: inline-block;
+      background: rgba(99,102,241,.2);
+      border: 1px solid rgba(99,102,241,.5);
+      color: #a5b4fc;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+    }
+    .cover h1 {
+      font-size: 56px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .cover p {
+      font-size: 20px;
+      color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto 48px;
+    }
+    .tech-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .pill {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 80px 40px;
+      page-break-inside: avoid;
+    }
+    .section + .section {
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 12px;
+    }
+    .section h2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 12px;
+    }
+    .section .subtitle {
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+
+    /* ── FILE TREE ── */
+    .file-tree {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 28px 32px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 2;
+    }
+    .ft-dir { color: #a5b4fc; font-weight: 600; }
+    .ft-file { color: #e2e8f0; }
+    .ft-desc { color: #64748b; margin-left: 8px; }
+    .ft-indent { padding-left: 20px; }
+    .ft-indent2 { padding-left: 40px; }
+    .ft-indent3 { padding-left: 60px; }
+
+    /* ── COMPONENT FLOW ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      align-items: center;
+    }
+    .flow-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .flow-box {
+      background: #1e1b4b;
+      border: 1.5px solid #4338ca;
+      border-radius: 10px;
+      padding: 14px 24px;
+      text-align: center;
+      min-width: 160px;
+    }
+    .flow-box.green {
+      background: #052e16;
+      border-color: #16a34a;
+    }
+    .flow-box.purple {
+      background: #2e1065;
+      border-color: #7c3aed;
+    }
+    .flow-box.orange {
+      background: #431407;
+      border-color: #ea580c;
+    }
+    .flow-box.gray {
+      background: #1e293b;
+      border-color: #475569;
+    }
+    .flow-box-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #f1f5f9;
+      margin-bottom: 2px;
+    }
+    .flow-box-sub {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .flow-arrow {
+      color: #4338ca;
+      font-size: 22px;
+      line-height: 1;
+      margin: 4px 0;
+    }
+    .flow-arrow.right {
+      margin: 0 4px;
+      font-size: 18px;
+    }
+
+    /* ── STEP LIST ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 48px;
+      bottom: 0;
+      width: 2px;
+      background: rgba(99,102,241,.25);
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #1e1b4b;
+      border: 2px solid #4338ca;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #a5b4fc;
+      z-index: 1;
+    }
+    .step-content {
+      flex: 1;
+      padding: 8px 0 32px;
+    }
+    .step-title {
+      font-weight: 700;
+      font-size: 16px;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+    .step-desc {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .step-code {
+      margin-top: 10px;
+      background: #111827;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: #a5b4fc;
+      line-height: 1.7;
+    }
+
+    /* ── TWO COLUMN ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card p, .card li {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.8;
+    }
+    .card ul { padding-left: 18px; }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .dot.blue { background: #6366f1; }
+    .dot.green { background: #22c55e; }
+    .dot.orange { background: #f97316; }
+    .dot.red { background: #ef4444; }
+
+    /* ── STATE MACHINE ── */
+    .states {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .state-box {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      min-width: 130px;
+    }
+    .state-box.active { border-color: #22c55e; background: #052e16; }
+    .state-box.error-s { border-color: #ef4444; background: #450a0a; }
+    .state-icon { font-size: 24px; margin-bottom: 4px; }
+    .state-name { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+    .state-desc { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .state-arrow { color: #475569; font-size: 20px; }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: white; color: #1e293b; }
+      .cover { background: #1e1b4b; min-height: auto; padding: 60px 40px; }
+      .cover h1 { -webkit-text-fill-color: white; }
+      .section { page-break-inside: avoid; }
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 40px;
+      color: #334155;
+      font-size: 12px;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+  </style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-badge">Technical Architecture</div>
+  <h1>Ads Player</h1>
+  <p>A React video player with Google IMA SDK integration for pre-roll, mid-roll, and post-roll ad support.</p>
+  <div class="tech-pills">
+    <span class="pill">React 18</span>
+    <span class="pill">TypeScript</span>
+    <span class="pill">Video.js</span>
+    <span class="pill">Google IMA SDK</span>
+    <span class="pill">Tailwind CSS</span>
+    <span class="pill">Vite</span>
+  </div>
+</div>
+
+
+<!-- PROJECT STRUCTURE -->
+<div class="section">
+  <div class="section-label">01 — Project Structure</div>
+  <h2>File Overview</h2>
+  <p class="subtitle">Every file has a single, clear responsibility.</p>
+
+  <div class="file-tree">
+    <div><span class="ft-dir">src/</span></div>
+    <div class="ft-indent"><span class="ft-dir">components/</span></div>
+    <div class="ft-indent2"><span class="ft-file">VideoPlayer.tsx</span><span class="ft-desc">— UI: renders the video + ad container, shows loading/error states</span></div>
+    <br/>
+    <div class="ft-indent"><span class="ft-dir">hooks/</span></div>
+    <div class="ft-indent2"><span class="ft-file">useVideoPlayer.ts</span><span class="ft-desc">— Brain: initializes video.js, loads IMA SDK, manages state</span></div>
+    <br/>
+    <div class="ft-indent"><span class="ft-dir">lib/</span></div>
+    <div class="ft-indent2"><span class="ft-file">loadImaSdk.ts</span><span class="ft-desc">— Loads Google IMA SDK script from CDN (cached, with 10s timeout)</span></div>
+    <br/>
+    <div class="ft-indent"><span class="ft-dir">config/</span></div>
+    <div class="ft-indent2"><span class="ft-file">media.config.ts</span><span class="ft-desc">— Video URL, ad tag URL, poster image URL</span></div>
+    <br/>
+    <div class="ft-indent"><span class="ft-dir">types/</span></div>
+    <div class="ft-indent2"><span class="ft-file">VideoPlayer.types.ts</span><span class="ft-desc">— Props: src, adTagUrl, poster</span></div>
+    <div class="ft-indent2"><span class="ft-file">useVideoPlayer.types.ts</span><span class="ft-desc">— Hook options and return type</span></div>
+    <div class="ft-indent2"><span class="ft-file">videojs-ima.types.ts</span><span class="ft-desc">— TypeScript types for video.js + IMA plugin</span></div>
+    <br/>
+    <div class="ft-indent"><span class="ft-dir">utils/</span></div>
+    <div class="ft-indent2"><span class="ft-file">utils.ts</span><span class="ft-desc">— createStableId(), getVideoMimeType()</span></div>
+    <br/>
+    <div class="ft-indent"><span class="ft-file">CONSTANTS.ts</span><span class="ft-desc">— Event names, string constants</span></div>
+    <div class="ft-indent"><span class="ft-file">App.tsx</span><span class="ft-desc">— Entry point, passes config into VideoPlayer</span></div>
+  </div>
+</div>
+
+
+<!-- COMPONENT ARCHITECTURE -->
+<div class="section">
+  <div class="section-label">02 — Architecture</div>
+  <h2>How Components Connect</h2>
+  <p class="subtitle">Data flows down from App through props. Logic lives entirely in the hook.</p>
+
+  <div class="flow">
+    <div class="flow-box gray" style="width:220px;">
+      <div class="flow-box-title">App.tsx</div>
+      <div class="flow-box-sub">src · adTagUrl · poster</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box" style="width:260px;">
+      <div class="flow-box-title">VideoPlayer.tsx</div>
+      <div class="flow-box-sub">UI only — renders video + ad container</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box purple" style="width:300px;">
+      <div class="flow-box-title">useVideoPlayer (hook)</div>
+      <div class="flow-box-sub">All logic: init, ads, state, cleanup</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-row">
+      <div class="flow-box green">
+        <div class="flow-box-title">Video.js</div>
+        <div class="flow-box-sub">Video player engine</div>
+      </div>
+      <div class="flow-box orange">
+        <div class="flow-box-title">Google IMA SDK</div>
+        <div class="flow-box-sub">Ad serving engine</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- useVideoPlayer STEP BY STEP -->
+<div class="section">
+  <div class="section-label">03 — useVideoPlayer Hook</div>
+  <h2>Step-by-Step Execution</h2>
+  <p class="subtitle">What happens from component mount to video playing.</p>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Component Mounts</div>
+        <div class="step-desc">
+          The <code style="color:#a5b4fc">VideoPlayer</code> component renders a <code style="color:#a5b4fc">&lt;video&gt;</code> element to the DOM.
+          The hook receives <strong>src</strong>, <strong>adTagUrl</strong>, <strong>adContainerId</strong>, and <strong>poster</strong> as inputs.
+          State starts as <code style="color:#a5b4fc">ready: false</code>, <code style="color:#a5b4fc">error: null</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Load Google IMA SDK</div>
+        <div class="step-desc">
+          <code style="color:#a5b4fc">loadImaSdk()</code> injects a <code style="color:#a5b4fc">&lt;script&gt;</code> tag pointing to Google's CDN.
+          The promise is <strong>cached</strong> — if another component calls it simultaneously, it reuses the same request.
+          A <strong>10-second timeout</strong> ensures it never hangs forever (e.g. if an ad-blocker silently drops the request).
+        </div>
+        <div class="step-code">
+          https://imasdk.googleapis.com/js/sdkloader/ima3.js<br/>
+          ✓ Already loaded → resolve immediately<br/>
+          ✓ Script loads → resolve<br/>
+          ✗ Network error → reject<br/>
+          ✗ 10 seconds pass → reject with timeout error
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Initialize Video.js Player</div>
+        <div class="step-desc">
+          Once the IMA SDK is loaded, <code style="color:#a5b4fc">videojs()</code> is called on the <code style="color:#a5b4fc">&lt;video&gt;</code> element.
+          It configures the player with the video source, poster image, controls, and fluid (responsive) layout.
+          The MIME type is automatically detected from the file extension (mp4, m3u8, webm, mpd).
+        </div>
+        <div class="step-code">
+          sources: [{ src, type: getVideoMimeType(src) }]<br/>
+          .mp4  → video/mp4<br/>
+          .m3u8 → application/x-mpegURL  (HLS)<br/>
+          .mpd  → application/dash+xml   (DASH)<br/>
+          .webm → video/webm
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Configure IMA Ad Plugin</div>
+        <div class="step-desc">
+          <code style="color:#a5b4fc">player.ima()</code> connects the video.js player to the IMA SDK.
+          It receives the <strong>ad tag URL</strong> (a VMAP/VAST URL from Google Ad Manager) and the
+          <strong>ad container ID</strong> (the DOM element where ads will be rendered visually).
+        </div>
+        <div class="step-code">
+          adTagUrl  → URL to VMAP/VAST ad schedule (from Google Ad Manager)<br/>
+          adContainerId → DOM element for rendering the ad overlay
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Wait for First Play</div>
+        <div class="step-desc">
+          Ads are not requested immediately — they are requested only when the user first presses Play.
+          This is required by the IMA SDK: <code style="color:#a5b4fc">initializeAdDisplayContainer()</code> must be called
+          from a user gesture (a click), otherwise browsers block it.
+        </div>
+        <div class="step-code">
+          player.on("play", () => &#123;<br/>
+          &nbsp;&nbsp;player.ima.initializeAdDisplayContainer()<br/>
+          &nbsp;&nbsp;player.ima.requestAds()  ← fetches the ad from Google<br/>
+          &#125;)
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <div class="step-title">Ad Error Recovery</div>
+        <div class="step-desc">
+          If an ad fails (network issue, invalid tag, ad-blocker), the <code style="color:#a5b4fc">adserror</code> event fires.
+          The hook automatically calls <code style="color:#a5b4fc">resumeAdPlayback()</code> so the video content
+          continues playing even if the ad failed — the user never gets stuck.
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <div class="step-title">Ready</div>
+        <div class="step-desc">
+          <code style="color:#a5b4fc">ready: true</code> is set. The component removes the loading overlay.
+          The player is fully operational.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- PLAYER STATES -->
+<div class="section">
+  <div class="section-label">04 — Player States</div>
+  <h2>What the User Sees</h2>
+  <p class="subtitle">The component moves through three visual states.</p>
+
+  <div class="states">
+    <div class="state-box">
+      <div class="state-icon">⏳</div>
+      <div class="state-name">Loading</div>
+      <div class="state-desc">ready: false<br/>error: null</div>
+    </div>
+    <div class="state-arrow">→</div>
+    <div class="state-box active">
+      <div class="state-icon">▶️</div>
+      <div class="state-name">Ready</div>
+      <div class="state-desc">ready: true<br/>error: null</div>
+    </div>
+    <div class="state-arrow">→</div>
+    <div class="state-box error-s">
+      <div class="state-icon">⚠️</div>
+      <div class="state-name">Error</div>
+      <div class="state-desc">ready: false<br/>error: "message"</div>
+    </div>
+  </div>
+
+  <br/><br/>
+
+  <div class="two-col">
+    <div class="card">
+      <h3><span class="dot blue"></span> Loading State</h3>
+      <p>Shown immediately on mount while the IMA SDK loads and video.js initializes. A black overlay with "Loading…" covers the player area. The video element is already in the DOM so initialization can proceed.</p>
+    </div>
+    <div class="card">
+      <h3><span class="dot green"></span> Ready State</h3>
+      <p>Video.js and the IMA plugin are fully initialized. The loading overlay is removed. The user can press play — on first play the ad is fetched and played, then the video content follows.</p>
+    </div>
+    <div class="card">
+      <h3><span class="dot red"></span> Error State</h3>
+      <p>Triggered if the IMA SDK fails to load (timeout, network error) or if video.js fails to initialize. The entire player is replaced with a black 16:9 box and a user-friendly error message.</p>
+    </div>
+    <div class="card">
+      <h3><span class="dot orange"></span> Ad Error (auto-recovered)</h3>
+      <p>If an individual ad request fails mid-session, it does NOT enter the Error state. The hook silently calls <code style="color:#a5b4fc">resumeAdPlayback()</code> and the video continues. Transparent to the user.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- AD FLOW -->
+<div class="section">
+  <div class="section-label">05 — Ad Playback Flow</div>
+  <h2>How Ads Are Served</h2>
+  <p class="subtitle">From the user pressing Play to content video.</p>
+
+  <div class="flow">
+    <div class="flow-box gray" style="width:280px;">
+      <div class="flow-box-title">User presses Play</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box" style="width:280px;">
+      <div class="flow-box-title">initializeAdDisplayContainer()</div>
+      <div class="flow-box-sub">Must happen on user gesture (browser policy)</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box purple" style="width:280px;">
+      <div class="flow-box-title">requestAds()</div>
+      <div class="flow-box-sub">Fetches VMAP/VAST from Google Ad Manager</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-row">
+      <div class="flow-box orange" style="min-width:200px;">
+        <div class="flow-box-title">Ad plays</div>
+        <div class="flow-box-sub">pre-roll / mid-roll / post-roll</div>
+      </div>
+      <div class="flow-box error-s" style="min-width:200px; background:#450a0a; border-color:#ef4444;">
+        <div class="flow-box-title">Ad fails</div>
+        <div class="flow-box-sub">resumeAdPlayback() called</div>
+      </div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-box green" style="width:280px;">
+      <div class="flow-box-title">Content video plays</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- DOM STRUCTURE -->
+<div class="section">
+  <div class="section-label">06 — DOM Structure</div>
+  <h2>How the Player is Laid Out</h2>
+  <p class="subtitle">Three layers stacked on top of each other using CSS absolute positioning.</p>
+
+  <div class="file-tree">
+    <div><span class="ft-dir">&lt;div&gt;</span><span class="ft-desc"> ← outer wrapper · relative · pt-[56.25%] = 16:9 aspect ratio reserved</span></div>
+    <div class="ft-indent">
+      <span class="ft-dir">&lt;div id="ad-container"&gt;</span><span class="ft-desc"> ← absolute inset-0 · z-10 · pointer-events-none</span>
+    </div>
+    <div class="ft-indent2"><span class="ft-file">IMA SDK injects ad content here</span><span class="ft-desc"> ← skip button, click overlay, etc.</span></div>
+    <div class="ft-indent">
+      <span class="ft-dir">&lt;div data-vjs-player&gt;</span><span class="ft-desc"> ← absolute inset-0 · video.js attaches here</span>
+    </div>
+    <div class="ft-indent2"><span class="ft-file">&lt;video&gt;</span><span class="ft-desc"> ← actual video element · w-full h-full</span></div>
+  </div>
+
+  <br/>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Why <code style="color:#a5b4fc">pt-[56.25%]</code>?</h3>
+      <p>56.25% = 9 ÷ 16 × 100. This CSS trick reserves the correct 16:9 height based on width <strong>before JavaScript loads</strong>, preventing the layout shift/glitch on page load where the player briefly appears at the wrong size.</p>
+    </div>
+    <div class="card">
+      <h3>Why <code style="color:#a5b4fc">pointer-events-none</code>?</h3>
+      <p>The ad container sits on top of the video. Without this, it would block all clicks (pause, seek bar, volume) when no ad is active. The IMA SDK overrides this on its own child elements when an ad needs to be interactive.</p>
+    </div>
+  </div>
+</div>
+
+
+<div class="footer">
+  Ads Player — Architecture Document
+</div>
+
+</body>
+</html>
