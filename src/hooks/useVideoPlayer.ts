@@ -12,7 +12,6 @@ import type {
 
 export function useVideoPlayer({
   src,
-  poster,
   adTagUrl,
   adContainerId,
 }: UseVideoPlayerOptions): UseVideoPlayerReturn {
@@ -39,16 +38,13 @@ export function useVideoPlayer({
       await loadImaSdk();
       if (!isEffectStillValid) return;
 
-      const playerBase = videojs(el, {
+      const player = videojs(el, {
         controls: true,
         preload: "auto",
-        poster,
         sources: [{ src, type: getVideoMimeType(src) }],
         fluid: true,
         playsinline: true,
-      });
-
-      const player = playerBase as PlayerWithIma;
+      }) as PlayerWithIma;
 
       if (!isEffectStillValid) {
         player.dispose();
@@ -60,6 +56,7 @@ export function useVideoPlayer({
       player.ima({
         adTagUrl,
         adContainerId,
+        autoPlayAdBreaks: true,
         debug: import.meta.env.DEV,
       });
 
@@ -91,7 +88,7 @@ export function useVideoPlayer({
 
       playerRef.current = null;
     };
-  }, [src, poster, adTagUrl, adContainerId]);
+  }, [src, adTagUrl, adContainerId]);
 
   return { videoElRef, ready, error };
 }

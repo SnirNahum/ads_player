@@ -2,7 +2,6 @@ import type { RefObject } from "react";
 
 export type UseVideoPlayerOptions = {
   src: string;
-  poster?: string;
   adTagUrl: string;
   adContainerId: string;
 };

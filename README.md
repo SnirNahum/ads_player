@@ -1,6 +1,6 @@
 # Video Player with IMA Ads
 
-A React video player component with Google IMA SDK integration for pre-roll ad support, built on top of Video.js.
+A React video player component with Google IMA SDK integration for pre-roll and mid-roll ad support, built on top of Video.js.
 
 ## Tech Stack
 
@@ -13,9 +13,11 @@ A React video player component with Google IMA SDK integration for pre-roll ad s
 ## Features
 
 - Video playback via Video.js
-- Pre-roll ad support via Google IMA SDK
+- Pre-roll and mid-roll ad support via Google IMA SDK (VMAP)
+- Automatic mid-roll scheduling from VMAP ad rules
+- Ads start only after user interaction (mobile-safe)
 - Graceful ad error fallback (resumes content on ad failure)
-- Loading state with poster image support
+- Loading state indicator
 - Fully typed with TypeScript
 
 ## Getting Started
@@ -30,16 +32,15 @@ npm run dev
 ```tsx
 <VideoPlayer
   src="https://example.com/video.mp4"
-  poster="https://example.com/poster.jpg"
-  adTagUrl="https://your-ad-tag-url"
+  adTagUrl="https://your-vmap-ad-tag-url"
 />
 ```
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run lint` | Lint source files |
-| `npm run format` | Check formatting |
+| Command          | Description              |
+| ---------------- | ------------------------ |
+| `npm run dev`    | Start development server |
+| `npm run build`  | Build for production     |
+| `npm run lint`   | Lint source files        |
+| `npm run format` | Check formatting         |

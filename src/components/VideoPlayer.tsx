@@ -3,14 +3,13 @@ import { useVideoPlayer } from "@/hooks/useVideoPlayer";
 import { createStableId } from "@/utils/utils";
 import type { VideoPlayerProps } from "@/types/VideoPlayer.types";
 
-export function VideoPlayer({ src, adTagUrl, poster }: VideoPlayerProps) {
+export function VideoPlayer({ src, adTagUrl }: VideoPlayerProps) {
   const [adContainerId] = useState(() => createStableId("ad"));
 
   const { videoElRef, ready, error } = useVideoPlayer({
     src,
     adTagUrl,
     adContainerId,
-    poster,
   });
 
   if (error) {

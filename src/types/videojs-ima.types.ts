@@ -5,6 +5,7 @@ export type VideoJsPlayer = ReturnType<typeof videojs>;
 export type ImaInitOptions = {
   adTagUrl: string;
   adContainerId?: string;
+  autoPlayAdBreaks?: boolean;
   debug?: boolean;
   [key: string]: unknown;
 };
