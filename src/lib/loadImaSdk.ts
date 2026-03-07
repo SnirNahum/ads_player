@@ -45,8 +45,8 @@ function createScriptLoadHandlers(
 }
 
 export async function loadImaSdk(): Promise<void> {
-  if (window.google?.ima) return Promise.resolve();
-  if (imaSdkPromise) return imaSdkPromise;
+  if (window.google?.ima) return;
+  if (imaSdkPromise) return await imaSdkPromise;
 
   imaSdkPromise = new Promise<void>((resolve, reject) => {
     const resetPromise = () => (imaSdkPromise = null);

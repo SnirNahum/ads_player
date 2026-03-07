@@ -1,12 +1,14 @@
-export interface UseVideoPlayerOptions {
+import type { RefObject } from "react";
+
+export type UseVideoPlayerOptions = {
   src: string;
   poster?: string;
   adTagUrl: string;
   adContainerId: string;
-}
+};
 
-export interface UseVideoPlayerReturn {
-  videoElRef: React.RefObject<HTMLVideoElement | null>;
+export type UseVideoPlayerReturn = {
+  videoElRef: RefObject<HTMLVideoElement | null>;
   ready: boolean;
   error: string | null;
-}
+};

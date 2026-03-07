@@ -22,7 +22,7 @@ export function useVideoPlayer({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let started = true;
+    let isEffectStillValid = true;
     setReady(false);
     setError(null);
 
@@ -31,11 +31,13 @@ export function useVideoPlayer({
       if (!el) return;
 
       const prev = playerRef.current;
-      if (prev && !prev.isDisposed()) prev.dispose();
+      if (prev && !prev.isDisposed()) {
+        prev.dispose();
+      }
       playerRef.current = null;
 
       await loadImaSdk();
-      if (started) return;
+      if (!isEffectStillValid) return;
 
       const playerBase = videojs(el, {
         controls: true,
@@ -47,6 +49,12 @@ export function useVideoPlayer({
       });
 
       const player = playerBase as PlayerWithIma;
+
+      if (!isEffectStillValid) {
+        player.dispose();
+        return;
+      }
+
       playerRef.current = player;
 
       player.ima({
@@ -66,20 +74,22 @@ export function useVideoPlayer({
       player.on("adserror", () => {
         player.ima.resumeAdPlayback?.();
       });
-
       setReady(true);
     }
 
     init().catch((err: unknown) => {
-      if (!started) return;
+      if (!isEffectStillValid) return;
       setError(err instanceof Error ? err.message : "Player failed to load");
     });
 
     return () => {
-      started = false;
+      isEffectStillValid = false;
+
       if (playerRef.current && !playerRef.current.isDisposed()) {
         playerRef.current.dispose();
       }
+
+      playerRef.current = null;
     };
   }, [src, poster, adTagUrl, adContainerId]);
 
