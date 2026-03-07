@@ -38,13 +38,13 @@ function createScriptLoadHandlers(
     cleanup();
     onPromiseReset();
     reject(new Error("IMA SDK load timed out"));
-  }, 10_000);
+  }, 10000);
 
   element.addEventListener("load", onLoad);
   element.addEventListener("error", onError);
 }
 
-export function loadImaSdk(): Promise<void> {
+export async function loadImaSdk(): Promise<void> {
   if (window.google?.ima) return Promise.resolve();
   if (imaSdkPromise) return imaSdkPromise;
 

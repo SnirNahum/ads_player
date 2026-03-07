@@ -1,5 +1,5 @@
 import { VideoPlayer } from "./components/VideoPlayer";
-import { BIG_BUCK_BUNNY_VIDEO, POSTER_URL, TEST_VMAP_TAG } from "./config/media.config";
+import { BIG_BUCK_BUNNY_VIDEO, POSTER_URL, TEST_VMAP_TAG } from "./constants";
 
 export default function App() {
   return (

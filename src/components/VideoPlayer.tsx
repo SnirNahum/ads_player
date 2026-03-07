@@ -1,11 +1,10 @@
 import { useRef } from "react";
 import { useVideoPlayer } from "@/hooks/useVideoPlayer";
 import { createStableId } from "@/utils/utils";
-import { AD, VIDEO_NOT_DISPLAY_ERROR } from "@/CONSTANTS";
 import type { VideoPlayerProps } from "@/types/VideoPlayer.types";
 
 export function VideoPlayer({ src, adTagUrl, poster }: VideoPlayerProps) {
-  const adContainerIdRef = useRef<string>(createStableId(AD));
+  const adContainerIdRef = useRef<string>(createStableId("ad"));
   const adContainerId = adContainerIdRef.current;
 
   const { videoElRef, error } = useVideoPlayer({
@@ -16,7 +15,7 @@ export function VideoPlayer({ src, adTagUrl, poster }: VideoPlayerProps) {
   });
 
   if (error) {
-    return <p>{VIDEO_NOT_DISPLAY_ERROR}</p>;
+    return <p>{"Video player failed to load. Please try again."}</p>;
   }
 
   return (
