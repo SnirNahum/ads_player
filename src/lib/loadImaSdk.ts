@@ -14,8 +14,6 @@ function createScriptLoadHandlers(
   reject: (err: Error) => void,
   onPromiseReset: () => void,
 ) {
-  let timeoutId: ReturnType<typeof setTimeout>;
-
   const cleanup = () => {
     clearTimeout(timeoutId);
     element.removeEventListener("load", onLoad);
@@ -34,7 +32,7 @@ function createScriptLoadHandlers(
     reject(new Error("Failed to load IMA SDK"));
   };
 
-  timeoutId = setTimeout(() => {
+  const timeoutId = setTimeout(() => {
     cleanup();
     onPromiseReset();
     reject(new Error("IMA SDK load timed out"));

@@ -1,11 +1,10 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { useVideoPlayer } from "@/hooks/useVideoPlayer";
 import { createStableId } from "@/utils/utils";
 import type { VideoPlayerProps } from "@/types/VideoPlayer.types";
 
 export function VideoPlayer({ src, adTagUrl, poster }: VideoPlayerProps) {
-  const adContainerIdRef = useRef<string>(createStableId("ad"));
-  const adContainerId = adContainerIdRef.current;
+  const [adContainerId] = useState(() => createStableId("ad"));
 
   const { videoElRef, ready, error } = useVideoPlayer({
     src,

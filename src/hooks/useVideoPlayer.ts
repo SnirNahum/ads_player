@@ -23,10 +23,10 @@ export function useVideoPlayer({
 
   useEffect(() => {
     let isEffectStillValid = true;
-    setReady(false);
-    setError(null);
 
     async function init() {
+      setReady(false);
+      setError(null);
       const el = videoElRef.current;
       if (!el) return;
 

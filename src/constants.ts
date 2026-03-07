@@ -4,5 +4,4 @@ export const TEST_VMAP_TAG =
 export const BIG_BUCK_BUNNY_VIDEO =
   "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
-export const POSTER_URL =
-  "https://peach.blender.org/wp-content/uploads/bird1.jpg";
+export const POSTER_URL = "https://peach.blender.org/wp-content/uploads/bird1.jpg";
