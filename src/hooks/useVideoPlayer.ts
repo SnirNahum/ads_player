@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import videojs from "video.js";
 import "videojs-contrib-ads";
 import "videojs-ima";
 import { loadImaSdk } from "@/lib/loadImaSdk";
-import { getVideoMimeType } from "@/utils/utils";
-import type { PlayerWithIma, VideoJsPlayer } from "@/types/videojs-ima.types";
+import type { VideoJsPlayer } from "@/types/videojs-ima.types";
 import type {
   UseVideoPlayerOptions,
   UseVideoPlayerReturn,
 } from "@/types/useVideoPlayer.types";
+import {
+  attachAdListeners,
+  createPlayer,
+  disposePlayer,
+  initIma,
+} from "@/utils/videoPlayerUtils";
 
 export function useVideoPlayer({
   src,
@@ -26,26 +30,17 @@ export function useVideoPlayer({
     async function init() {
       setReady(false);
       setError(null);
+
       const el = videoElRef.current;
       if (!el) return;
 
-      const prev = playerRef.current;
-      if (prev && !prev.isDisposed()) {
-        prev.dispose();
-      }
+      disposePlayer(playerRef.current);
       playerRef.current = null;
 
       await loadImaSdk();
       if (!isEffectStillValid) return;
 
-      const player = videojs(el, {
-        controls: true,
-        preload: "auto",
-        sources: [{ src, type: getVideoMimeType(src) }],
-        fluid: true,
-        playsinline: true,
-      }) as PlayerWithIma;
-
+      const player = createPlayer(el, src);
       if (!isEffectStillValid) {
         player.dispose();
         return;
@@ -53,24 +48,9 @@ export function useVideoPlayer({
 
       playerRef.current = player;
 
-      player.ima({
-        adTagUrl,
-        adContainerId,
-        autoPlayAdBreaks: true,
-        debug: import.meta.env.DEV,
-      });
+      initIma(player, adTagUrl, adContainerId);
+      attachAdListeners(player);
 
-      const onFirstPlay = () => {
-        player.ima.initializeAdDisplayContainer?.();
-        player.ima.requestAds?.();
-        player.off("play", onFirstPlay);
-      };
-
-      player.on("play", onFirstPlay);
-
-      player.on("adserror", () => {
-        player.ima.resumeAdPlayback?.();
-      });
       setReady(true);
     }
 
@@ -81,11 +61,7 @@ export function useVideoPlayer({
 
     return () => {
       isEffectStillValid = false;
-
-      if (playerRef.current && !playerRef.current.isDisposed()) {
-        playerRef.current.dispose();
-      }
-
+      disposePlayer(playerRef.current);
       playerRef.current = null;
     };
   }, [src, adTagUrl, adContainerId]);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useVideoPlayer } from "@/hooks/useVideoPlayer";
-import { createStableId } from "@/utils/utils";
 import type { VideoPlayerProps } from "@/types/VideoPlayer.types";
+import { createStableId } from "@/utils/videoPlayerUtils";
 
 export function VideoPlayer({ src, adTagUrl }: VideoPlayerProps) {
   const [adContainerId] = useState(() => createStableId("ad"));
